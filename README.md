@@ -2,6 +2,16 @@
 
 Generate agent skills from OpenAPI specs. Creates [agentskills.io](https://agentskills.io) format documentation so AI agents can discover and call your API.
 
+## Why Skills and not MCP?
+
+OpenAPI specs can have thousands of endpoints so MCP wrappers immediately flood your context with many tools. With an Agent Skill we can have progressive disclosure:
+
+ - Describe the API's purpose and tags in the main SKILL.md
+ - List available APIs for each tag in `references/TAG_api_list.md`
+ - Give detailed API spec for each API in `references/get_user.md` (see [example](#example-api-definition) below)
+
+Your agent can call these APIs using any tool you like, often just `curl`.
+
 ## Installation
 
 ```bash
@@ -65,6 +75,42 @@ Each endpoint gets a detailed markdown file with:
 - Request body schema with field types and constraints
 - Response schemas for each status code
 - Examples (when available in the spec)
+
+#### Example API Definition `references/get_user.md`
+
+```md
+# Get User
+
+**GET /api/users/{user_id}**
+
+Retrieve a user's profile by their ID.
+
+## Path Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| user_id | string | Yes | The user's ID (e.g. `usr_4kQx9mP2`) |
+
+## Responses
+
+### 200 OK
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Unique user ID (e.g. `usr_4kQx9mP2`) |
+| email | string | User's email address (e.g. `jane@example.com`) |
+| name | string | Full display name (e.g. `Jane Smith`) |
+| created_at | string | ISO 8601 signup timestamp (e.g. `2024-01-08T09:15:00Z`) |
+| role | string | One of: `admin`, `member`, `viewer` |
+| active | boolean | `false` if the account has been deactivated |
+
+### 404 Not Found
+
+| Field | Type | Description |
+|-------|------|-------------|
+| error | string | Human-readable message (e.g. `User not found`) |
+```
+
 
 ## Requirements
 
