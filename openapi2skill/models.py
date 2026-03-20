@@ -1,0 +1,68 @@
+"""Data models for the OpenAPI skill generator."""
+
+from dataclasses import dataclass
+
+
+@dataclass
+class TagGroup:
+    """Represents a group of endpoints under a tag."""
+
+    name: str
+    description: str  # empty string if not present in spec
+    endpoints: list["Endpoint"]
+
+
+@dataclass
+class Endpoint:
+    """Represents a single API endpoint."""
+
+    path: str
+    method: str
+    summary: str
+    description: str
+    tag: str
+    parameters: list["Parameter"]
+    request_body: "RequestBody | None"
+    responses: list["Response"]
+
+
+@dataclass
+class Parameter:
+    """Represents a path, query, or header parameter."""
+
+    name: str
+    location: str  # "path", "query", "header"
+    type: str
+    required: bool
+    description: str
+    default: str | None
+
+
+@dataclass
+class RequestBody:
+    """Represents a request body schema."""
+
+    content_type: str
+    fields: list["Field"]
+    example: dict | None
+
+
+@dataclass
+class Field:
+    """Represents a field in a request body or response."""
+
+    name: str
+    type: str
+    required: bool
+    description: str
+    constraints: str
+
+
+@dataclass
+class Response:
+    """Represents an API response."""
+
+    status_code: str
+    description: str
+    fields: list["Field"]
+    example: dict | None
