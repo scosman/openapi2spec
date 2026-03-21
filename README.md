@@ -16,7 +16,7 @@ Your agent can call these APIs using any tool you like, often just `curl`.
 
 ```bash
 git clone git@github.com:scosman/openapi2spec.git
-cd openapi2spec
+cd openapi2skill
 uv sync
 ```
 
