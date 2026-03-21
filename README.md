@@ -1,6 +1,7 @@
 # OpenAPI 2 Skill
+### Generate agent skills from OpenAPI API definitions
 
-Generate agent skills from OpenAPI specs. Creates [agentskills.io](https://agentskills.io) format documentation so AI agents can discover and call your API.
+Creates [agentskills.io](https://agentskills.io) format documentation/skills so AI agents can discover and call your API.
 
 ## Why Skills and not MCP?
 
@@ -15,7 +16,7 @@ Your agent can call these APIs using any tool you like, often just `curl`.
 ## Installation
 
 ```bash
-git clone git@github.com:scosman/openapi2spec.git
+git clone git@github.com:scosman/openapi2skill.git
 cd openapi2skill
 uv sync
 ```
