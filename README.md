@@ -3,15 +3,17 @@
 
 Creates [agentskills.io](https://agentskills.io) format documentation/skills so AI agents can discover and call your API.
 
+[![CI](https://github.com/scosman/openapi2skill/actions/workflows/ci.yml/badge.svg)](https://github.com/scosman/openapi2skill/actions/workflows/ci.yml)
+
 ## Why Skills and not MCP?
 
-OpenAPI specs can have thousands of endpoints so MCP wrappers immediately flood your context with many tools. With an Agent Skill we can have progressive disclosure:
+OpenAPI specs can have thousands of endpoints. MCP wrappers immediately flood your context with too many tools when your agent probably only needs a few of them. With an Agent Skill we can have progressive disclosure:
 
  - Describe the API's purpose and tags in the main SKILL.md
  - List available APIs for each tag in `references/TAG_api_list.md`
  - Give detailed API spec for each API in `references/get_user.md` (see [example](#example-api-definition) below)
 
-Your agent can call these APIs using any tool you like, often just `curl`.
+Your agent only loads the information is needs, not the entire API. Your agent can call these APIs using any tool you like, often just `curl`.
 
 ## Installation
 
@@ -79,7 +81,7 @@ Each endpoint gets a detailed markdown file with:
 - Response schemas for each status code
 - Examples (when available in the spec)
 
-#### Example API Definition `references/get_user.md`
+#### Example API Definition `references/get_users.md`
 
 ```md
 # Get User
@@ -135,4 +137,7 @@ uv run ruff format .
 
 ## Alternative
 
-Also see [neutree-ai/openapi-to-skills](https://github.com/neutree-ai/openapi-to-skills) for a similar tool. I made mine because 1) I didn't see theirs until after, 2) I wanted fewer reference file hops. Theirs breaks out each schema into separate files. Loading a single API it might require 5 file-reads to get needed schemas into context. Which is better depends on your usage. When agents only need only 1 or 2 APIs per session, the method used by this project is faster and uses fewer tokens. When agents load many APIs with overlapping schemas, theirs is faster and uses fewer tokens.
+Also see [neutree-ai/openapi-to-skills](https://github.com/neutree-ai/openapi-to-skills) for a similar tool. I made mine because 1) I didn't see theirs until after, 2) I wanted fewer reference file hops. 
+
+Theirs breaks out each schema into separate files. Loading a single API it might require 5 file-reads to get needed schemas into context. Which approach is better depends on your usage. When agents only need only 1 or 2 APIs per session, the method used by this project is faster and uses fewer tokens. When agents load many APIs with overlapping schemas, theirs is faster and uses fewer tokens.
+
