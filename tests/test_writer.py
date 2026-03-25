@@ -55,6 +55,7 @@ def test_assign_filenames_no_collision() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         ),
         Endpoint(
             path="/products",
@@ -65,6 +66,7 @@ def test_assign_filenames_no_collision() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         ),
     ]
 
@@ -87,6 +89,7 @@ def test_assign_filenames_collision() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         ),
         Endpoint(
             path="/Users",  # Different case, same filename
@@ -97,6 +100,7 @@ def test_assign_filenames_collision() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         ),
     ]
 
@@ -118,6 +122,7 @@ def test_assign_filenames_multiple_collisions() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         ),
         Endpoint(
             path="/Test",
@@ -128,6 +133,7 @@ def test_assign_filenames_multiple_collisions() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         ),
         Endpoint(
             path="/TEST",
@@ -138,6 +144,7 @@ def test_assign_filenames_multiple_collisions() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         ),
     ]
 
@@ -326,6 +333,7 @@ def test_assign_tag_filenames_no_collision() -> None:
                     parameters=[],
                     request_body=None,
                     responses=[],
+                    schemas=[],
                 )
             ],
         ),
@@ -342,6 +350,7 @@ def test_assign_tag_filenames_no_collision() -> None:
                     parameters=[],
                     request_body=None,
                     responses=[],
+                    schemas=[],
                 )
             ],
         ),
@@ -370,6 +379,7 @@ def test_assign_tag_filenames_collision() -> None:
                     parameters=[],
                     request_body=None,
                     responses=[],
+                    schemas=[],
                 )
             ],
         ),
@@ -386,6 +396,7 @@ def test_assign_tag_filenames_collision() -> None:
                     parameters=[],
                     request_body=None,
                     responses=[],
+                    schemas=[],
                 )
             ],
         ),
@@ -413,6 +424,7 @@ def test_assign_tag_filenames_multiple_collisions() -> None:
                     parameters=[],
                     request_body=None,
                     responses=[],
+                    schemas=[],
                 )
             ],
         ),
@@ -429,6 +441,7 @@ def test_assign_tag_filenames_multiple_collisions() -> None:
                     parameters=[],
                     request_body=None,
                     responses=[],
+                    schemas=[],
                 )
             ],
         ),
@@ -445,6 +458,7 @@ def test_assign_tag_filenames_multiple_collisions() -> None:
                     parameters=[],
                     request_body=None,
                     responses=[],
+                    schemas=[],
                 )
             ],
         ),
