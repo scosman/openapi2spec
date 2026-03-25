@@ -20,10 +20,12 @@ def resolve_refs(spec: dict) -> dict:
             if "$ref" in obj:
                 ref_path = obj["$ref"]
                 if ref_path in stack:
-                    # Circular reference - replace with placeholder
                     obj.clear()
                     obj["type"] = "object"
                     obj["description"] = "(circular reference)"
+                    if ref_path.startswith("#/components/schemas/"):
+                        schema_name = ref_path.split("/")[-1]
+                        obj["x-schema-name"] = schema_name
                     return
 
                 # Get a fresh copy of the referenced content from original spec
@@ -37,9 +39,11 @@ def resolve_refs(spec: dict) -> dict:
                     new_stack = stack | {ref_path}
                     resolve_in_place(ref_copy, new_stack)
 
-                    # Replace the $ref with the resolved content
                     obj.clear()
                     obj.update(ref_copy)
+                    if ref_path.startswith("#/components/schemas/"):
+                        schema_name = ref_path.split("/")[-1]
+                        obj["x-schema-name"] = schema_name
             else:
                 for value in obj.values():
                     resolve_in_place(value, stack)

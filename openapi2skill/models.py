@@ -13,6 +13,15 @@ class TagGroup:
 
 
 @dataclass
+class Schema:
+    """Represents a named object schema for the Schemas section."""
+
+    name: str
+    description: str
+    fields: list["Field"]
+
+
+@dataclass
 class Endpoint:
     """Represents a single API endpoint."""
 
@@ -24,6 +33,7 @@ class Endpoint:
     parameters: list["Parameter"]
     request_body: "RequestBody | None"
     responses: list["Response"]
+    schemas: list["Schema"]
 
 
 @dataclass

@@ -308,3 +308,81 @@ def test_resolve_sample_spec() -> None:
     user_props = result["components"]["schemas"]["User"]["properties"]
     assert "$ref" not in user_props["address"]
     assert user_props["address"]["type"] == "object"
+
+
+def test_resolve_ref_preserves_schema_name() -> None:
+    """Test that x-schema-name is added when resolving a #/components/schemas/X ref."""
+    spec = {
+        "openapi": "3.0.0",
+        "paths": {
+            "/users": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {"$ref": "#/components/schemas/User"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "components": {"schemas": {"User": {"type": "object", "properties": {}}}},
+    }
+
+    result = resolver.resolve_refs(spec)
+
+    schema = result["paths"]["/users"]["get"]["responses"]["200"]["content"][
+        "application/json"
+    ]["schema"]
+    assert schema["x-schema-name"] == "User"
+
+
+def test_resolve_ref_no_schema_name_for_non_schema_ref() -> None:
+    """Test that x-schema-name is NOT added for non-schema refs."""
+    spec = {
+        "openapi": "3.0.0",
+        "paths": {
+            "/users": {
+                "get": {
+                    "parameters": [{"$ref": "#/components/parameters/UserId"}],
+                    "responses": {"200": {"description": "OK"}},
+                }
+            }
+        },
+        "components": {"parameters": {"UserId": {"name": "id", "in": "query"}}},
+    }
+
+    result = resolver.resolve_refs(spec)
+
+    param = result["paths"]["/users"]["get"]["parameters"][0]
+    assert "x-schema-name" not in param
+
+
+def test_resolve_circular_ref_preserves_schema_name() -> None:
+    """Test that circular ref placeholder gets x-schema-name."""
+    spec = {
+        "openapi": "3.0.0",
+        "paths": {},
+        "components": {
+            "schemas": {
+                "Node": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                        "parent": {"$ref": "#/components/schemas/Node"},
+                    },
+                }
+            }
+        },
+    }
+
+    result = resolver.resolve_refs(spec)
+
+    node_props = result["components"]["schemas"]["Node"]["properties"]
+    nested_parent = node_props["parent"]["properties"]["parent"]
+    assert nested_parent["type"] == "object"
+    assert nested_parent["description"] == "(circular reference)"
+    assert nested_parent["x-schema-name"] == "Node"

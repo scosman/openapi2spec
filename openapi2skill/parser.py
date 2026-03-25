@@ -6,10 +6,51 @@ from openapi2skill.models import (
     Parameter,
     RequestBody,
     Response,
+    Schema,
     TagGroup,
 )
 
 HTTP_METHODS = {"get", "post", "put", "delete", "patch"}
+
+
+class SchemaCollector:
+    """Collects schemas during parsing for later rendering."""
+
+    def __init__(self) -> None:
+        self._schemas: dict[str, Schema] = {}
+        self._fingerprints: dict[str, str] = {}
+
+    def register(self, name: str, description: str, fields: list[Field]) -> str:
+        fingerprint = self._make_fingerprint(fields)
+        if fingerprint in self._fingerprints:
+            return self._fingerprints[fingerprint]
+        final_name = name
+        if name in self._schemas:
+            suffix = 2
+            while f"{name}V{suffix}" in self._schemas:
+                suffix += 1
+            final_name = f"{name}V{suffix}"
+        schema = Schema(name=final_name, description=description, fields=fields)
+        self._schemas[final_name] = schema
+        self._fingerprints[fingerprint] = final_name
+        return final_name
+
+    @property
+    def schemas(self) -> list[Schema]:
+        return list(self._schemas.values())
+
+    @staticmethod
+    def _make_fingerprint(fields: list[Field]) -> str:
+        parts = []
+        for f in sorted(fields, key=lambda x: x.name):
+            parts.append(f"{f.name}:{f.type}:{f.required}")
+        return "|".join(parts)
+
+
+def _derive_schema_name(schema: dict, field_name: str) -> str:
+    if "x-schema-name" in schema:
+        return schema["x-schema-name"]
+    return "".join(segment.capitalize() for segment in field_name.split("_"))
 
 
 def parse_endpoints(spec: dict) -> list[Endpoint]:
@@ -115,6 +156,7 @@ def _extract_endpoint(
         parameters=parameters,
         request_body=request_body,
         responses=responses,
+        schemas=[],
     )
 
 

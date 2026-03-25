@@ -1143,3 +1143,112 @@ def test_response_without_content() -> None:
 
     endpoints = parser.parse_endpoints(spec)
     assert endpoints[0].responses[0].fields == []
+
+
+def test_schema_collector_basic() -> None:
+    """Test basic schema registration and retrieval."""
+    collector = parser.SchemaCollector()
+    from openapi2skill.models import Field
+
+    fields = [
+        Field(name="id", type="integer", required=True, description="", constraints="")
+    ]
+    name = collector.register("User", "A user", fields)
+
+    assert name == "User"
+    assert len(collector.schemas) == 1
+    assert collector.schemas[0].name == "User"
+    assert collector.schemas[0].description == "A user"
+
+
+def test_schema_collector_dedup_identical() -> None:
+    """Test that identical schemas return the same name."""
+    collector = parser.SchemaCollector()
+    from openapi2skill.models import Field
+
+    fields1 = [
+        Field(name="id", type="integer", required=True, description="", constraints="")
+    ]
+    fields2 = [
+        Field(name="id", type="integer", required=True, description="", constraints="")
+    ]
+
+    name1 = collector.register("User", "A user", fields1)
+    name2 = collector.register("User", "Another user", fields2)
+
+    assert name1 == name2
+    assert len(collector.schemas) == 1
+
+
+def test_schema_collector_conflict_different() -> None:
+    """Test that different schemas with same name get V2 suffix."""
+    collector = parser.SchemaCollector()
+    from openapi2skill.models import Field
+
+    fields1 = [
+        Field(name="id", type="integer", required=True, description="", constraints="")
+    ]
+    fields2 = [
+        Field(name="id", type="string", required=True, description="", constraints="")
+    ]
+
+    name1 = collector.register("User", "User v1", fields1)
+    name2 = collector.register("User", "User v2", fields2)
+
+    assert name1 == "User"
+    assert name2 == "UserV2"
+    assert len(collector.schemas) == 2
+
+
+def test_schema_collector_fingerprint_order_independent() -> None:
+    """Test that same fields in different order produce same fingerprint."""
+    collector = parser.SchemaCollector()
+    from openapi2skill.models import Field
+
+    fields1 = [
+        Field(name="a", type="integer", required=True, description="", constraints=""),
+        Field(name="b", type="string", required=False, description="", constraints=""),
+    ]
+    fields2 = [
+        Field(name="b", type="string", required=False, description="", constraints=""),
+        Field(name="a", type="integer", required=True, description="", constraints=""),
+    ]
+
+    name1 = collector.register("Schema1", "", fields1)
+    name2 = collector.register("Schema2", "", fields2)
+
+    assert name1 == name2
+
+
+def test_derive_schema_name_from_ref() -> None:
+    """Test that x-schema-name is preferred."""
+    schema = {"x-schema-name": "TaskMetadata", "type": "object"}
+    name = parser._derive_schema_name(schema, "some_field")
+    assert name == "TaskMetadata"
+
+
+def test_derive_schema_name_from_field() -> None:
+    """Test snake_case to PascalCase conversion."""
+    assert (
+        parser._derive_schema_name({}, "questions_and_answers") == "QuestionsAndAnswers"
+    )
+    assert parser._derive_schema_name({}, "task_metadata") == "TaskMetadata"
+    assert parser._derive_schema_name({}, "data_by_topic") == "DataByTopic"
+
+
+def test_endpoint_has_schemas_field() -> None:
+    """Test that Endpoint has schemas field initialized to empty list."""
+    spec = {
+        "openapi": "3.0.0",
+        "paths": {
+            "/users": {
+                "get": {
+                    "responses": {"200": {"description": "OK"}},
+                }
+            }
+        },
+    }
+
+    endpoints = parser.parse_endpoints(spec)
+    assert hasattr(endpoints[0], "schemas")
+    assert endpoints[0].schemas == []
