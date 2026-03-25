@@ -50,6 +50,8 @@ class SchemaCollector:
 def _derive_schema_name(schema: dict, field_name: str) -> str:
     if "x-schema-name" in schema:
         return schema["x-schema-name"]
+    if not field_name:
+        return "UnnamedSchema"
     return "".join(segment.capitalize() for segment in field_name.split("_"))
 
 

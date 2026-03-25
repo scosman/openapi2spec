@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from openapi2skill import parser
+from openapi2skill.models import Field
 
 
 def test_parse_endpoints_basic() -> None:
@@ -1148,7 +1149,6 @@ def test_response_without_content() -> None:
 def test_schema_collector_basic() -> None:
     """Test basic schema registration and retrieval."""
     collector = parser.SchemaCollector()
-    from openapi2skill.models import Field
 
     fields = [
         Field(name="id", type="integer", required=True, description="", constraints="")
@@ -1164,7 +1164,6 @@ def test_schema_collector_basic() -> None:
 def test_schema_collector_dedup_identical() -> None:
     """Test that identical schemas return the same name."""
     collector = parser.SchemaCollector()
-    from openapi2skill.models import Field
 
     fields1 = [
         Field(name="id", type="integer", required=True, description="", constraints="")
@@ -1183,7 +1182,6 @@ def test_schema_collector_dedup_identical() -> None:
 def test_schema_collector_conflict_different() -> None:
     """Test that different schemas with same name get V2 suffix."""
     collector = parser.SchemaCollector()
-    from openapi2skill.models import Field
 
     fields1 = [
         Field(name="id", type="integer", required=True, description="", constraints="")
@@ -1203,7 +1201,6 @@ def test_schema_collector_conflict_different() -> None:
 def test_schema_collector_fingerprint_order_independent() -> None:
     """Test that same fields in different order produce same fingerprint."""
     collector = parser.SchemaCollector()
-    from openapi2skill.models import Field
 
     fields1 = [
         Field(name="a", type="integer", required=True, description="", constraints=""),
