@@ -2,7 +2,7 @@
 
 import json
 
-from openapi2skill.models import Endpoint, TagGroup
+from openapi2skill.models import Endpoint, Schema, TagGroup
 
 DEFAULT_PREAMBLE = """---
 name: api-definition
@@ -257,6 +257,9 @@ def generate_reference_md(endpoint: Endpoint) -> str:
                 lines.append("```")
                 lines.append("")
 
+    if endpoint.schemas:
+        lines.extend(_generate_schemas_section(endpoint.schemas))
+
     return "\n".join(lines)
 
 
@@ -287,3 +290,47 @@ def _get_status_description(status_code: str) -> str:
         "503": "Service Unavailable",
     }
     return descriptions.get(status_code, "")
+
+
+def _generate_schemas_section(schemas: list[Schema]) -> list[str]:
+    """Generate markdown lines for the Schemas section.
+
+    Args:
+        schemas: List of Schema objects to render
+
+    Returns:
+        List of markdown lines for the Schemas section
+    """
+    if not schemas:
+        return []
+
+    lines: list[str] = []
+
+    lines.append("## Schemas")
+    lines.append("")
+
+    for schema in schemas:
+        lines.append(f"### {schema.name}")
+        lines.append("")
+
+        if schema.description:
+            lines.append(schema.description)
+            lines.append("")
+
+        lines.append("| Field | Type | Required | Description |")
+        lines.append("|-------|------|----------|-------------|")
+
+        for field in schema.fields:
+            desc = field.description
+            if field.constraints:
+                if desc:
+                    desc = f"{desc}. {field.constraints}"
+                else:
+                    desc = field.constraints
+            lines.append(
+                f"| {field.name} | {field.type} | {'Yes' if field.required else 'No'} | {desc} |"
+            )
+
+        lines.append("")
+
+    return lines

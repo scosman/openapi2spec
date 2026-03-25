@@ -114,6 +114,10 @@ def test_full_pipeline_with_sample_spec(tmp_path: Path) -> None:
     assert "# List all users" in get_users_content
     assert "**GET /users**" in get_users_content
     assert "## Responses" in get_users_content
+    assert "## Schemas" in get_users_content
+    assert "### User" in get_users_content
+    assert "address.street" in get_users_content
+    assert "address.city" in get_users_content
 
     post_users_content = (reference_dir / "post_users.md").read_text()
     assert "# Create a user" in post_users_content
@@ -342,3 +346,174 @@ def test_reference_file_with_full_endpoint_details(tmp_path: Path) -> None:
 
     # Check response example
     assert '"id": 1' in reference_md
+
+
+def test_pipeline_includes_schemas_section(tmp_path: Path) -> None:
+    """Test that schemas section is included for deeply nested objects."""
+    spec = {
+        "openapi": "3.0.0",
+        "info": {"title": "Test API", "version": "1.0.0"},
+        "paths": {
+            "/tasks": {
+                "post": {
+                    "summary": "Create task",
+                    "tags": ["Tasks"],
+                    "requestBody": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "config": {
+                                            "type": "object",
+                                            "properties": {
+                                                "generation": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "metadata": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "model": {
+                                                                    "type": "string"
+                                                                },
+                                                                "version": {
+                                                                    "type": "string"
+                                                                },
+                                                            },
+                                                        }
+                                                    },
+                                                }
+                                            },
+                                        }
+                                    },
+                                }
+                            }
+                        }
+                    },
+                    "responses": {"201": {"description": "Created"}},
+                }
+            }
+        },
+        "tags": [{"name": "Tasks"}],
+    }
+
+    endpoints = parse_endpoints(spec)
+    assert len(endpoints) == 1
+
+    reference_md = generate_reference_md(endpoints[0])
+
+    assert "## Schemas" in reference_md
+    assert "### Metadata" in reference_md
+    assert "| model | string |" in reference_md
+    assert "| version | string |" in reference_md
+
+
+def test_pipeline_with_ref_schemas(tmp_path: Path) -> None:
+    """Test that $ref schemas are properly named and included."""
+    spec = {
+        "openapi": "3.0.0",
+        "info": {"title": "Test API", "version": "1.0.0"},
+        "paths": {
+            "/users": {
+                "get": {
+                    "summary": "List users",
+                    "tags": ["Users"],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "array",
+                                        "items": {"$ref": "#/components/schemas/User"},
+                                    }
+                                }
+                            },
+                        }
+                    },
+                }
+            }
+        },
+        "components": {
+            "schemas": {
+                "User": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "integer"},
+                        "name": {"type": "string"},
+                        "address": {"$ref": "#/components/schemas/Address"},
+                    },
+                },
+                "Address": {
+                    "type": "object",
+                    "properties": {
+                        "street": {"type": "string"},
+                        "city": {"type": "string"},
+                    },
+                },
+            }
+        },
+        "tags": [{"name": "Users"}],
+    }
+
+    spec = resolve_refs(spec)
+    endpoints = parse_endpoints(spec)
+    assert len(endpoints) == 1
+
+    reference_md = generate_reference_md(endpoints[0])
+
+    assert "array of User" in reference_md
+    assert "## Schemas" in reference_md
+    assert "### User" in reference_md
+    assert "| id | integer |" in reference_md
+    assert "| name | string |" in reference_md
+    assert "address.street" in reference_md
+    assert "address.city" in reference_md
+
+
+def test_pipeline_array_of_objects_schema(tmp_path: Path) -> None:
+    """Test that arrays of objects are properly named."""
+    spec = {
+        "openapi": "3.0.0",
+        "info": {"title": "Test API", "version": "1.0.0"},
+        "paths": {
+            "/questions": {
+                "post": {
+                    "summary": "Submit questions",
+                    "tags": ["Questions"],
+                    "requestBody": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "questions_and_answers": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "question": {"type": "string"},
+                                                    "answer": {"type": "string"},
+                                                },
+                                            },
+                                        }
+                                    },
+                                }
+                            }
+                        }
+                    },
+                    "responses": {"201": {"description": "Created"}},
+                }
+            }
+        },
+        "tags": [{"name": "Questions"}],
+    }
+
+    endpoints = parse_endpoints(spec)
+    reference_md = generate_reference_md(endpoints[0])
+
+    assert "array of QuestionsAndAnswers" in reference_md
+    assert "## Schemas" in reference_md
+    assert "### QuestionsAndAnswers" in reference_md
+    assert "| question | string |" in reference_md
+    assert "| answer | string |" in reference_md

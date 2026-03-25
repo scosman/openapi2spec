@@ -7,6 +7,7 @@ from openapi2skill.models import (
     Parameter,
     RequestBody,
     Response,
+    Schema,
     TagGroup,
 )
 
@@ -78,6 +79,7 @@ def test_generate_skill_md_basic() -> None:
             responses=[
                 Response(status_code="200", description="OK", fields=[], example=None)
             ],
+            schemas=[],
         )
     ]
     tag_groups = [
@@ -110,6 +112,7 @@ def test_generate_skill_md_with_preamble() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         )
     ]
     tag_groups = [TagGroup(name="Test", description="", endpoints=endpoints)]
@@ -143,6 +146,7 @@ def test_generate_skill_md_multiple_tags() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         )
     ]
     endpoints2 = [
@@ -155,6 +159,7 @@ def test_generate_skill_md_multiple_tags() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         )
     ]
     tag_groups = [
@@ -191,6 +196,7 @@ def test_generate_skill_md_tag_without_description() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         )
     ]
     tag_groups = [TagGroup(name="Test", description="", endpoints=endpoints)]
@@ -215,6 +221,7 @@ def test_generate_reference_md_basic() -> None:
         responses=[
             Response(status_code="200", description="Success", fields=[], example=None)
         ],
+        schemas=[],
     )
 
     result = generator.generate_reference_md(endpoint)
@@ -246,6 +253,7 @@ def test_generate_reference_md_with_path_params() -> None:
         ],
         request_body=None,
         responses=[],
+        schemas=[],
     )
 
     result = generator.generate_reference_md(endpoint)
@@ -275,6 +283,7 @@ def test_generate_reference_md_with_query_params() -> None:
         ],
         request_body=None,
         responses=[],
+        schemas=[],
     )
 
     result = generator.generate_reference_md(endpoint)
@@ -313,6 +322,7 @@ def test_generate_reference_md_with_request_body() -> None:
             example=None,
         ),
         responses=[],
+        schemas=[],
     )
 
     result = generator.generate_reference_md(endpoint)
@@ -338,6 +348,7 @@ def test_generate_reference_md_with_request_body_example() -> None:
             example={"name": "Alice", "email": "alice@example.com"},
         ),
         responses=[],
+        schemas=[],
     )
 
     result = generator.generate_reference_md(endpoint)
@@ -371,6 +382,7 @@ def test_generate_reference_md_without_request_body_example() -> None:
             example=None,
         ),
         responses=[],
+        schemas=[],
     )
 
     result = generator.generate_reference_md(endpoint)
@@ -411,6 +423,7 @@ def test_generate_reference_md_with_response_fields() -> None:
                 example=None,
             )
         ],
+        schemas=[],
     )
 
     result = generator.generate_reference_md(endpoint)
@@ -437,6 +450,7 @@ def test_generate_reference_md_with_response_example() -> None:
                 example={"id": 1, "name": "Alice"},
             )
         ],
+        schemas=[],
     )
 
     result = generator.generate_reference_md(endpoint)
@@ -468,6 +482,7 @@ def test_generate_reference_md_multiple_responses() -> None:
                 example=None,
             ),
         ],
+        schemas=[],
     )
 
     result = generator.generate_reference_md(endpoint)
@@ -490,6 +505,7 @@ def test_generate_reference_md_no_request_section_when_empty() -> None:
         responses=[
             Response(status_code="200", description="OK", fields=[], example=None)
         ],
+        schemas=[],
     )
 
     result = generator.generate_reference_md(endpoint)
@@ -517,6 +533,7 @@ def test_generate_reference_md_status_descriptions() -> None:
             Response(status_code="422", description="", fields=[], example=None),
             Response(status_code="500", description="", fields=[], example=None),
         ],
+        schemas=[],
     )
 
     result = generator.generate_reference_md(endpoint)
@@ -546,6 +563,7 @@ def test_generate_reference_md_unknown_status_code() -> None:
                 status_code="418", description="I'm a teapot", fields=[], example=None
             ),
         ],
+        schemas=[],
     )
 
     result = generator.generate_reference_md(endpoint)
@@ -579,6 +597,7 @@ def test_generate_tag_api_list_md_basic() -> None:
             responses=[
                 Response(status_code="200", description="OK", fields=[], example=None)
             ],
+            schemas=[],
         )
     ]
     tag_group = TagGroup(
@@ -609,6 +628,7 @@ def test_generate_tag_api_list_md_without_description() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         )
     ]
     tag_group = TagGroup(name="Test", description="", endpoints=endpoints)
@@ -633,6 +653,7 @@ def test_generate_tag_api_list_md_multiple_endpoints() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         ),
         Endpoint(
             path="/users",
@@ -643,6 +664,7 @@ def test_generate_tag_api_list_md_multiple_endpoints() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         ),
     ]
     tag_group = TagGroup(name="Users", description="", endpoints=endpoints)
@@ -669,6 +691,7 @@ def test_generate_tag_api_list_md_escapes_special_chars() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         )
     ]
     tag_group = TagGroup(name="Test", description="", endpoints=endpoints)
@@ -693,6 +716,7 @@ def test_generate_tag_api_list_md_truncates_description() -> None:
             parameters=[],
             request_body=None,
             responses=[],
+            schemas=[],
         )
     ]
     tag_group = TagGroup(name="Test", description="", endpoints=endpoints)
@@ -702,3 +726,227 @@ def test_generate_tag_api_list_md_truncates_description() -> None:
 
     assert "xxx..." in result
     assert long_desc not in result
+
+
+def test_generate_schemas_section_empty() -> None:
+    """Test empty schemas list produces no output."""
+    result = generator._generate_schemas_section([])
+    assert result == []
+
+
+def test_generate_schemas_section_single() -> None:
+    """Test single schema renders correctly."""
+    schemas = [
+        Schema(
+            name="Address",
+            description="A postal address",
+            fields=[
+                Field(
+                    name="street",
+                    type="string",
+                    required=True,
+                    description="Street name",
+                    constraints="",
+                ),
+                Field(
+                    name="city",
+                    type="string",
+                    required=True,
+                    description="City name",
+                    constraints="",
+                ),
+            ],
+        )
+    ]
+
+    result = generator._generate_schemas_section(schemas)
+
+    assert "## Schemas" in result
+    assert "### Address" in result
+    assert "A postal address" in result
+    assert "| Field | Type | Required | Description |" in result
+    assert "| street | string | Yes | Street name |" in result
+    assert "| city | string | Yes | City name |" in result
+
+
+def test_generate_schemas_section_multiple() -> None:
+    """Test multiple schemas all rendered."""
+    schemas = [
+        Schema(
+            name="User",
+            description="",
+            fields=[
+                Field(
+                    name="id",
+                    type="integer",
+                    required=True,
+                    description="",
+                    constraints="",
+                )
+            ],
+        ),
+        Schema(
+            name="Address",
+            description="",
+            fields=[
+                Field(
+                    name="city",
+                    type="string",
+                    required=True,
+                    description="",
+                    constraints="",
+                )
+            ],
+        ),
+    ]
+
+    result = generator._generate_schemas_section(schemas)
+    result_text = "\n".join(result)
+
+    assert "### User" in result_text
+    assert "### Address" in result_text
+    assert "| id | integer | Yes |  |" in result_text
+    assert "| city | string | Yes |  |" in result_text
+
+
+def test_generate_schemas_section_with_description() -> None:
+    """Test schema description is included."""
+    schemas = [
+        Schema(
+            name="TaskMetadata",
+            description="Metadata about the model used for a task",
+            fields=[],
+        )
+    ]
+
+    result = generator._generate_schemas_section(schemas)
+    result_text = "\n".join(result)
+
+    assert "Metadata about the model used for a task" in result_text
+
+
+def test_generate_schemas_section_with_constraints() -> None:
+    """Test field constraints are included in description."""
+    schemas = [
+        Schema(
+            name="Item",
+            description="",
+            fields=[
+                Field(
+                    name="status",
+                    type="string",
+                    required=False,
+                    description="Item status",
+                    constraints="One of: active, inactive",
+                ),
+            ],
+        )
+    ]
+
+    result = generator._generate_schemas_section(schemas)
+    result_text = "\n".join(result)
+
+    assert "Item status. One of: active, inactive" in result_text
+
+
+def test_reference_md_with_schemas() -> None:
+    """Test endpoint with schemas includes Schemas section."""
+    endpoint = Endpoint(
+        path="/users",
+        method="POST",
+        summary="Create user",
+        description="",
+        tag="Users",
+        parameters=[],
+        request_body=None,
+        responses=[
+            Response(
+                status_code="200",
+                description="Success",
+                fields=[
+                    Field(
+                        name="user",
+                        type="User",
+                        required=True,
+                        description="The created user",
+                        constraints="",
+                    )
+                ],
+                example=None,
+            )
+        ],
+        schemas=[
+            Schema(
+                name="User",
+                description="A user object",
+                fields=[
+                    Field(
+                        name="id",
+                        type="integer",
+                        required=True,
+                        description="User ID",
+                        constraints="",
+                    ),
+                    Field(
+                        name="name",
+                        type="string",
+                        required=True,
+                        description="User name",
+                        constraints="",
+                    ),
+                ],
+            )
+        ],
+    )
+
+    result = generator.generate_reference_md(endpoint)
+
+    assert "## Schemas" in result
+    assert "### User" in result
+    assert "A user object" in result
+    assert "| id | integer | Yes | User ID |" in result
+
+
+def test_reference_md_no_schemas() -> None:
+    """Test endpoint without schemas has no Schemas section."""
+    endpoint = Endpoint(
+        path="/health",
+        method="GET",
+        summary="Health check",
+        description="",
+        tag="System",
+        parameters=[],
+        request_body=None,
+        responses=[
+            Response(status_code="200", description="OK", fields=[], example=None)
+        ],
+        schemas=[],
+    )
+
+    result = generator.generate_reference_md(endpoint)
+
+    assert "## Schemas" not in result
+
+
+def test_reference_md_schemas_after_responses() -> None:
+    """Test Schemas section appears after Responses section."""
+    endpoint = Endpoint(
+        path="/test",
+        method="GET",
+        summary="Test",
+        description="",
+        tag="Test",
+        parameters=[],
+        request_body=None,
+        responses=[
+            Response(status_code="200", description="OK", fields=[], example=None)
+        ],
+        schemas=[Schema(name="TestSchema", description="", fields=[])],
+    )
+
+    result = generator.generate_reference_md(endpoint)
+
+    responses_pos = result.find("## Responses")
+    schemas_pos = result.find("## Schemas")
+    assert responses_pos > 0
+    assert schemas_pos > responses_pos
