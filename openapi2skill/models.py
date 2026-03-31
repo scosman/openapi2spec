@@ -30,6 +30,7 @@ class Endpoint:
     summary: str
     description: str
     tag: str
+    tags: list[str]
     parameters: list["Parameter"]
     request_body: "RequestBody | None"
     responses: list["Response"]

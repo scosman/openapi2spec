@@ -172,6 +172,7 @@ def _extract_endpoint(
     summary = _extract_summary(operation, method, path)
     description = operation.get("description", "")
     tag = _extract_tag(operation)
+    tags = _extract_tags(operation)
     parameters = _extract_parameters(path_item, operation)
 
     collector = SchemaCollector()
@@ -184,6 +185,7 @@ def _extract_endpoint(
         summary=summary,
         description=description,
         tag=tag,
+        tags=tags,
         parameters=parameters,
         request_body=request_body,
         responses=responses,
@@ -206,6 +208,14 @@ def _extract_tag(operation: dict) -> str:
     if tags and isinstance(tags, list) and len(tags) > 0:
         return tags[0]
     return "Other"
+
+
+def _extract_tags(operation: dict) -> list[str]:
+    """Extract all tags from an operation."""
+    tags = operation.get("tags", [])
+    if tags and isinstance(tags, list):
+        return list(tags)
+    return []
 
 
 def _extract_parameters(path_item: dict, operation: dict) -> list[Parameter]:

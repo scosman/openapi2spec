@@ -148,6 +148,11 @@ def generate_reference_md(endpoint: Endpoint) -> str:
     lines.append(f"**{endpoint.method} {endpoint.path}**")
     lines.append("")
 
+    # Tags
+    if endpoint.tags:
+        lines.append(f"**Tags:** {', '.join(endpoint.tags)}")
+        lines.append("")
+
     # Full description
     if endpoint.description:
         lines.append(endpoint.description)

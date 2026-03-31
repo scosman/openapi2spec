@@ -74,6 +74,7 @@ def test_generate_skill_md_basic() -> None:
             summary="List users",
             description="Returns all users",
             tag="Users",
+            tags=["Users"],
             parameters=[],
             request_body=None,
             responses=[
@@ -109,6 +110,7 @@ def test_generate_skill_md_with_preamble() -> None:
             summary="Test",
             description="",
             tag="Test",
+            tags=["Test"],
             parameters=[],
             request_body=None,
             responses=[],
@@ -143,6 +145,7 @@ def test_generate_skill_md_multiple_tags() -> None:
             summary="List users",
             description="",
             tag="Users",
+            tags=["Users"],
             parameters=[],
             request_body=None,
             responses=[],
@@ -156,6 +159,7 @@ def test_generate_skill_md_multiple_tags() -> None:
             summary="List products",
             description="",
             tag="Products",
+            tags=["Products"],
             parameters=[],
             request_body=None,
             responses=[],
@@ -193,6 +197,7 @@ def test_generate_skill_md_tag_without_description() -> None:
             summary="Test",
             description="",
             tag="Test",
+            tags=["Test"],
             parameters=[],
             request_body=None,
             responses=[],
@@ -216,6 +221,7 @@ def test_generate_reference_md_basic() -> None:
         summary="List users",
         description="Returns all users in the system",
         tag="Users",
+        tags=["Users"],
         parameters=[],
         request_body=None,
         responses=[
@@ -228,9 +234,50 @@ def test_generate_reference_md_basic() -> None:
 
     assert "# List users" in result
     assert "**GET /users**" in result
+    assert "**Tags:** Users" in result
     assert "Returns all users in the system" in result
     assert "## Responses" in result
     assert "### 200 OK" in result
+
+
+def test_generate_reference_md_multiple_tags() -> None:
+    """Test that multiple tags are displayed."""
+    endpoint = Endpoint(
+        path="/users",
+        method="GET",
+        summary="List users",
+        description="",
+        tag="Users",
+        tags=["Users", "Admin"],
+        parameters=[],
+        request_body=None,
+        responses=[],
+        schemas=[],
+    )
+
+    result = generator.generate_reference_md(endpoint)
+
+    assert "**Tags:** Users, Admin" in result
+
+
+def test_generate_reference_md_no_tags() -> None:
+    """Test that tags line is omitted when no tags."""
+    endpoint = Endpoint(
+        path="/users",
+        method="GET",
+        summary="List users",
+        description="",
+        tag="Other",
+        tags=[],
+        parameters=[],
+        request_body=None,
+        responses=[],
+        schemas=[],
+    )
+
+    result = generator.generate_reference_md(endpoint)
+
+    assert "**Tags:**" not in result
 
 
 def test_generate_reference_md_with_path_params() -> None:
@@ -241,6 +288,7 @@ def test_generate_reference_md_with_path_params() -> None:
         summary="Get user",
         description="",
         tag="Users",
+        tags=["Users"],
         parameters=[
             Parameter(
                 name="id",
@@ -271,6 +319,7 @@ def test_generate_reference_md_with_query_params() -> None:
         summary="List users",
         description="",
         tag="Users",
+        tags=["Users"],
         parameters=[
             Parameter(
                 name="limit",
@@ -300,6 +349,7 @@ def test_generate_reference_md_with_request_body() -> None:
         summary="Create user",
         description="",
         tag="Users",
+        tags=["Users"],
         parameters=[],
         request_body=RequestBody(
             content_type="application/json",
@@ -341,6 +391,7 @@ def test_generate_reference_md_with_request_body_example() -> None:
         summary="Create user",
         description="",
         tag="Users",
+        tags=["Users"],
         parameters=[],
         request_body=RequestBody(
             content_type="application/json",
@@ -367,6 +418,7 @@ def test_generate_reference_md_without_request_body_example() -> None:
         summary="Create user",
         description="",
         tag="Users",
+        tags=["Users"],
         parameters=[],
         request_body=RequestBody(
             content_type="application/json",
@@ -398,6 +450,7 @@ def test_generate_reference_md_with_response_fields() -> None:
         summary="Get user",
         description="",
         tag="Users",
+        tags=["Users"],
         parameters=[],
         request_body=None,
         responses=[
@@ -440,6 +493,7 @@ def test_generate_reference_md_with_response_example() -> None:
         summary="Get user",
         description="",
         tag="Users",
+        tags=["Users"],
         parameters=[],
         request_body=None,
         responses=[
@@ -468,6 +522,7 @@ def test_generate_reference_md_multiple_responses() -> None:
         summary="Create user",
         description="",
         tag="Users",
+        tags=["Users"],
         parameters=[],
         request_body=None,
         responses=[
@@ -500,6 +555,7 @@ def test_generate_reference_md_no_request_section_when_empty() -> None:
         summary="Health check",
         description="",
         tag="System",
+        tags=["System"],
         parameters=[],
         request_body=None,
         responses=[
@@ -521,6 +577,7 @@ def test_generate_reference_md_status_descriptions() -> None:
         summary="Test",
         description="",
         tag="Test",
+        tags=["Test"],
         parameters=[],
         request_body=None,
         responses=[
@@ -556,6 +613,7 @@ def test_generate_reference_md_unknown_status_code() -> None:
         summary="Test",
         description="",
         tag="Test",
+        tags=["Test"],
         parameters=[],
         request_body=None,
         responses=[
@@ -592,6 +650,7 @@ def test_generate_tag_api_list_md_basic() -> None:
             summary="List users",
             description="Returns all users",
             tag="Users",
+            tags=["Users"],
             parameters=[],
             request_body=None,
             responses=[
@@ -625,6 +684,7 @@ def test_generate_tag_api_list_md_without_description() -> None:
             summary="Test",
             description="",
             tag="Test",
+            tags=["Test"],
             parameters=[],
             request_body=None,
             responses=[],
@@ -650,6 +710,7 @@ def test_generate_tag_api_list_md_multiple_endpoints() -> None:
             summary="List users",
             description="",
             tag="Users",
+            tags=["Users"],
             parameters=[],
             request_body=None,
             responses=[],
@@ -661,6 +722,7 @@ def test_generate_tag_api_list_md_multiple_endpoints() -> None:
             summary="Create user",
             description="",
             tag="Users",
+            tags=["Users"],
             parameters=[],
             request_body=None,
             responses=[],
@@ -688,6 +750,7 @@ def test_generate_tag_api_list_md_escapes_special_chars() -> None:
             summary="Test | pipe",
             description="Line1\nLine2",
             tag="Test",
+            tags=["Test"],
             parameters=[],
             request_body=None,
             responses=[],
@@ -713,6 +776,7 @@ def test_generate_tag_api_list_md_truncates_description() -> None:
             summary="Test",
             description=long_desc,
             tag="Test",
+            tags=["Test"],
             parameters=[],
             request_body=None,
             responses=[],
@@ -857,6 +921,7 @@ def test_reference_md_with_schemas() -> None:
         summary="Create user",
         description="",
         tag="Users",
+        tags=["Users"],
         parameters=[],
         request_body=None,
         responses=[
@@ -915,6 +980,7 @@ def test_reference_md_no_schemas() -> None:
         summary="Health check",
         description="",
         tag="System",
+        tags=["System"],
         parameters=[],
         request_body=None,
         responses=[
@@ -936,6 +1002,7 @@ def test_reference_md_schemas_after_responses() -> None:
         summary="Test",
         description="",
         tag="Test",
+        tags=["Test"],
         parameters=[],
         request_body=None,
         responses=[
