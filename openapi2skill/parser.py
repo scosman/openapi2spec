@@ -214,7 +214,7 @@ def _extract_tags(operation: dict) -> list[str]:
     """Extract all tags from an operation."""
     tags = operation.get("tags", [])
     if tags and isinstance(tags, list):
-        return list(tags)
+        return [str(t) for t in tags]
     return []
 
 
