@@ -321,18 +321,18 @@ def test_reference_file_with_full_endpoint_details(tmp_path: Path) -> None:
 
     # Check path parameters
     assert "### Path Parameters" in reference_md
-    assert "| id | integer | Yes | User ID |" in reference_md
+    assert "|id|integer|Yes|User ID|" in reference_md
 
     # Check query parameters with default
     assert "### Query Parameters" in reference_md
-    assert "| notify | boolean | No | True | Send notification |" in reference_md
+    assert "|notify|boolean|No|True|Send notification|" in reference_md
 
     # Check request body
     assert "### Request Body" in reference_md
     assert "**Content Type:** `application/json`" in reference_md
-    assert "| name | string | Yes | User name |" in reference_md
-    assert "| email | string | No | Email address |" in reference_md
-    assert "| role | string | No | User role. One of: admin, user |" in reference_md
+    assert "|name|string|Yes|User name|" in reference_md
+    assert "|email|string|No|Email address|" in reference_md
+    assert "|role|string|No|User role. One of: admin, user|" in reference_md
 
     # Check request body example
     assert "#### Example" in reference_md
@@ -404,8 +404,8 @@ def test_pipeline_includes_schemas_section(tmp_path: Path) -> None:
 
     assert "## Schemas" in reference_md
     assert "### Metadata" in reference_md
-    assert "| model | string |" in reference_md
-    assert "| version | string |" in reference_md
+    assert "|model|string|" in reference_md
+    assert "|version|string|" in reference_md
 
 
 def test_pipeline_with_ref_schemas(tmp_path: Path) -> None:
@@ -465,8 +465,8 @@ def test_pipeline_with_ref_schemas(tmp_path: Path) -> None:
     assert "array of User" in reference_md
     assert "## Schemas" in reference_md
     assert "### User" in reference_md
-    assert "| id | integer |" in reference_md
-    assert "| name | string |" in reference_md
+    assert "|id|integer|" in reference_md
+    assert "|name|string|" in reference_md
     assert "address.street" in reference_md
     assert "address.city" in reference_md
 
@@ -515,5 +515,5 @@ def test_pipeline_array_of_objects_schema(tmp_path: Path) -> None:
     assert "array of QuestionsAndAnswers" in reference_md
     assert "## Schemas" in reference_md
     assert "### QuestionsAndAnswers" in reference_md
-    assert "| question | string |" in reference_md
-    assert "| answer | string |" in reference_md
+    assert "|question|string|" in reference_md
+    assert "|answer|string|" in reference_md

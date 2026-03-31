@@ -111,8 +111,8 @@ def generate_tag_api_list_md(
         lines.append("")
 
     # Endpoint table
-    lines.append("| Endpoint | Method | Name | Description | API Details URL |")
-    lines.append("|----------|--------|------|-------------|-----------------|")
+    lines.append("|Endpoint|Method|Name|Description|API Details URL|")
+    lines.append("|-|-|-|-|-|")
 
     for endpoint in tag_group.endpoints:
         ep_key = f"{endpoint.method}_{endpoint.path}"
@@ -123,7 +123,7 @@ def generate_tag_api_list_md(
         description = truncate_description(escape_table_cell(endpoint.description))
 
         lines.append(
-            f"| `{endpoint.path}` | {endpoint.method} | {name} | {description} | reference/{filename} |"
+            f"|`{endpoint.path}`|{endpoint.method}|{name}|{description}|reference/{filename}|"
         )
 
     lines.append("")
@@ -170,11 +170,11 @@ def generate_reference_md(endpoint: Endpoint) -> str:
         if path_params:
             lines.append("### Path Parameters")
             lines.append("")
-            lines.append("| Name | Type | Required | Description |")
-            lines.append("|------|------|----------|-------------|")
+            lines.append("|Name|Type|Required|Description|")
+            lines.append("|-|-|-|-|")
             for param in path_params:
                 lines.append(
-                    f"| {param.name} | {param.type} | {'Yes' if param.required else 'No'} | {param.description} |"
+                    f"|{param.name}|{param.type}|{'Yes' if param.required else 'No'}|{param.description}|"
                 )
             lines.append("")
 
@@ -183,12 +183,12 @@ def generate_reference_md(endpoint: Endpoint) -> str:
         if query_params:
             lines.append("### Query Parameters")
             lines.append("")
-            lines.append("| Name | Type | Required | Default | Description |")
-            lines.append("|------|------|----------|---------|-------------|")
+            lines.append("|Name|Type|Required|Default|Description|")
+            lines.append("|-|-|-|-|-|")
             for param in query_params:
                 default = param.default if param.default else ""
                 lines.append(
-                    f"| {param.name} | {param.type} | {'Yes' if param.required else 'No'} | {default} | {param.description} |"
+                    f"|{param.name}|{param.type}|{'Yes' if param.required else 'No'}|{default}|{param.description}|"
                 )
             lines.append("")
 
@@ -200,8 +200,8 @@ def generate_reference_md(endpoint: Endpoint) -> str:
             lines.append("")
 
             if endpoint.request_body.fields:
-                lines.append("| Field | Type | Required | Description |")
-                lines.append("|-------|------|----------|-------------|")
+                lines.append("|Field|Type|Required|Description|")
+                lines.append("|-|-|-|-|")
                 for field in endpoint.request_body.fields:
                     # Include constraints in description if present
                     desc = field.description
@@ -211,7 +211,7 @@ def generate_reference_md(endpoint: Endpoint) -> str:
                         else:
                             desc = field.constraints
                     lines.append(
-                        f"| {field.name} | {field.type} | {'Yes' if field.required else 'No'} | {desc} |"
+                        f"|{field.name}|{field.type}|{'Yes' if field.required else 'No'}|{desc}|"
                     )
                 lines.append("")
 
@@ -241,8 +241,8 @@ def generate_reference_md(endpoint: Endpoint) -> str:
                 lines.append("")
 
             if response.fields:
-                lines.append("| Field | Type | Description |")
-                lines.append("|-------|------|-------------|")
+                lines.append("|Field|Type|Description|")
+                lines.append("|-|-|-|")
                 for field in response.fields:
                     # Include constraints in description if present
                     desc = field.description
@@ -251,7 +251,7 @@ def generate_reference_md(endpoint: Endpoint) -> str:
                             desc = f"{desc}. {field.constraints}"
                         else:
                             desc = field.constraints
-                    lines.append(f"| {field.name} | {field.type} | {desc} |")
+                    lines.append(f"|{field.name}|{field.type}|{desc}|")
                 lines.append("")
 
             if response.example:
@@ -322,8 +322,8 @@ def _generate_schemas_section(schemas: list[Schema]) -> list[str]:
             lines.append(schema.description)
             lines.append("")
 
-        lines.append("| Field | Type | Required | Description |")
-        lines.append("|-------|------|----------|-------------|")
+        lines.append("|Field|Type|Required|Description|")
+        lines.append("|-|-|-|-|")
 
         for field in schema.fields:
             desc = field.description
@@ -333,7 +333,7 @@ def _generate_schemas_section(schemas: list[Schema]) -> list[str]:
                 else:
                     desc = field.constraints
             lines.append(
-                f"| {field.name} | {field.type} | {'Yes' if field.required else 'No'} | {desc} |"
+                f"|{field.name}|{field.type}|{'Yes' if field.required else 'No'}|{desc}|"
             )
 
         lines.append("")

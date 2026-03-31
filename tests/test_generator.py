@@ -308,7 +308,7 @@ def test_generate_reference_md_with_path_params() -> None:
 
     assert "## Request" in result
     assert "### Path Parameters" in result
-    assert "| id | integer | Yes | User ID |" in result
+    assert "|id|integer|Yes|User ID|" in result
 
 
 def test_generate_reference_md_with_query_params() -> None:
@@ -338,7 +338,7 @@ def test_generate_reference_md_with_query_params() -> None:
     result = generator.generate_reference_md(endpoint)
 
     assert "### Query Parameters" in result
-    assert "| limit | integer | No | 20 | Max results |" in result
+    assert "|limit|integer|No|20|Max results|" in result
 
 
 def test_generate_reference_md_with_request_body() -> None:
@@ -379,8 +379,8 @@ def test_generate_reference_md_with_request_body() -> None:
 
     assert "### Request Body" in result
     assert "**Content Type:** `application/json`" in result
-    assert "| name | string | Yes | User name |" in result
-    assert "| role | string | No | User role. One of: admin, user |" in result
+    assert "|name|string|Yes|User name|" in result
+    assert "|role|string|No|User role. One of: admin, user|" in result
 
 
 def test_generate_reference_md_with_request_body_example() -> None:
@@ -481,8 +481,8 @@ def test_generate_reference_md_with_response_fields() -> None:
 
     result = generator.generate_reference_md(endpoint)
 
-    assert "| id | integer | User ID |" in result
-    assert "| name | string | User name |" in result
+    assert "|id|integer|User ID|" in result
+    assert "|name|string|User name|" in result
 
 
 def test_generate_reference_md_with_response_example() -> None:
@@ -668,7 +668,7 @@ def test_generate_tag_api_list_md_basic() -> None:
 
     assert "# Users API" in result
     assert "User management" in result
-    assert "| Endpoint | Method | Name | Description | API Details URL |" in result
+    assert "|Endpoint|Method|Name|Description|API Details URL|" in result
     assert "`/users`" in result
     assert "GET" in result
     assert "List users" in result
@@ -828,9 +828,9 @@ def test_generate_schemas_section_single() -> None:
     assert "## Schemas" in result
     assert "### Address" in result
     assert "A postal address" in result
-    assert "| Field | Type | Required | Description |" in result
-    assert "| street | string | Yes | Street name |" in result
-    assert "| city | string | Yes | City name |" in result
+    assert "|Field|Type|Required|Description|" in result
+    assert "|street|string|Yes|Street name|" in result
+    assert "|city|string|Yes|City name|" in result
 
 
 def test_generate_schemas_section_multiple() -> None:
@@ -869,8 +869,8 @@ def test_generate_schemas_section_multiple() -> None:
 
     assert "### User" in result_text
     assert "### Address" in result_text
-    assert "| id | integer | Yes |  |" in result_text
-    assert "| city | string | Yes |  |" in result_text
+    assert "|id|integer|Yes||" in result_text
+    assert "|city|string|Yes||" in result_text
 
 
 def test_generate_schemas_section_with_description() -> None:
@@ -969,7 +969,7 @@ def test_reference_md_with_schemas() -> None:
     assert "## Schemas" in result
     assert "### User" in result
     assert "A user object" in result
-    assert "| id | integer | Yes | User ID |" in result
+    assert "|id|integer|Yes|User ID|" in result
 
 
 def test_reference_md_no_schemas() -> None:
