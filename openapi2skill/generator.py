@@ -50,7 +50,8 @@ def _append_constraints(description: str, constraints: str) -> str:
     """Append constraints to description, joining with '. ' if both present."""
     if constraints:
         if description:
-            return f"{description}. {constraints}"
+            sep = " " if description.endswith(".") else ". "
+            return f"{description}{sep}{constraints}"
         return constraints
     return description
 
