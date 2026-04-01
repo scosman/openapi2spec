@@ -275,6 +275,8 @@ def _param_to_parameter(param: dict) -> Parameter:
     default_val = schema.get("default")
     default = str(default_val) if default_val is not None else None
 
+    constraints = _extract_constraints(schema)
+
     return Parameter(
         name=name,
         location=location,
@@ -282,6 +284,7 @@ def _param_to_parameter(param: dict) -> Parameter:
         required=required,
         description=description,
         default=default,
+        constraints=constraints,
     )
 
 
@@ -600,7 +603,12 @@ def _render_type(schema: dict) -> str:
 
 
 def _extract_constraints(schema: dict) -> str:
-    """Extract constraint string from schema (enums, format, etc.)."""
+    """Extract constraint string from schema (enums, format, etc.).
+
+    Uses compact range notation where possible:
+    - "1-64 chars" instead of "Min length: 1. Max length: 64"
+    - "0-100" instead of "Min: 0. Max: 100"
+    """
     constraints = []
 
     if "enum" in schema:
@@ -610,19 +618,25 @@ def _extract_constraints(schema: dict) -> str:
     if "format" in schema:
         constraints.append(f"Format: {schema['format']}")
 
-    if "minimum" in schema:
-        constraints.append(f"Min: {schema['minimum']}")
+    has_min = "minimum" in schema
+    has_max = "maximum" in schema
+    if has_min and has_max:
+        constraints.append(f"{schema['minimum']}-{schema['maximum']}")
+    elif has_min:
+        constraints.append(f">={schema['minimum']}")
+    elif has_max:
+        constraints.append(f"<={schema['maximum']}")
 
-    if "maximum" in schema:
-        constraints.append(f"Max: {schema['maximum']}")
-
-    if "minLength" in schema:
-        constraints.append(f"Min length: {schema['minLength']}")
-
-    if "maxLength" in schema:
-        constraints.append(f"Max length: {schema['maxLength']}")
+    has_min_len = "minLength" in schema
+    has_max_len = "maxLength" in schema
+    if has_min_len and has_max_len:
+        constraints.append(f"{schema['minLength']}-{schema['maxLength']} chars")
+    elif has_min_len:
+        constraints.append(f">={schema['minLength']} chars")
+    elif has_max_len:
+        constraints.append(f"<={schema['maxLength']} chars")
 
     if "pattern" in schema:
-        constraints.append(f"Pattern: {schema['pattern']}")
+        constraints.append(f"Pattern: `{schema['pattern']}`")
 
     return ". ".join(constraints)

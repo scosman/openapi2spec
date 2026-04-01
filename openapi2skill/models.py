@@ -47,6 +47,7 @@ class Parameter:
     required: bool
     description: str
     default: str | None
+    constraints: str
 
 
 @dataclass

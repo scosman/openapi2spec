@@ -1028,27 +1028,53 @@ def test_extract_constraints_format() -> None:
     assert "Format: email" in constraints
 
 
-def test_extract_constraints_min_max() -> None:
-    """Test min/max constraint extraction."""
+def test_extract_constraints_min_max_range() -> None:
+    """Test min/max constraint uses compact range notation."""
     schema = {"type": "integer", "minimum": 0, "maximum": 100}
     constraints = parser._extract_constraints(schema)
-    assert "Min: 0" in constraints
-    assert "Max: 100" in constraints
+    assert constraints == "0-100"
 
 
-def test_extract_constraints_string_length() -> None:
-    """Test string length constraint extraction."""
-    schema = {"type": "string", "minLength": 1, "maxLength": 100}
+def test_extract_constraints_min_only() -> None:
+    """Test minimum-only constraint."""
+    schema = {"type": "integer", "minimum": 0}
     constraints = parser._extract_constraints(schema)
-    assert "Min length: 1" in constraints
-    assert "Max length: 100" in constraints
+    assert constraints == ">=0"
+
+
+def test_extract_constraints_max_only() -> None:
+    """Test maximum-only constraint."""
+    schema = {"type": "integer", "maximum": 100}
+    constraints = parser._extract_constraints(schema)
+    assert constraints == "<=100"
+
+
+def test_extract_constraints_string_length_range() -> None:
+    """Test string length constraint uses compact range notation."""
+    schema = {"type": "string", "minLength": 1, "maxLength": 64}
+    constraints = parser._extract_constraints(schema)
+    assert constraints == "1-64 chars"
+
+
+def test_extract_constraints_min_length_only() -> None:
+    """Test minLength-only constraint."""
+    schema = {"type": "string", "minLength": 1}
+    constraints = parser._extract_constraints(schema)
+    assert constraints == ">=1 chars"
+
+
+def test_extract_constraints_max_length_only() -> None:
+    """Test maxLength-only constraint."""
+    schema = {"type": "string", "maxLength": 255}
+    constraints = parser._extract_constraints(schema)
+    assert constraints == "<=255 chars"
 
 
 def test_extract_constraints_pattern() -> None:
-    """Test pattern constraint extraction."""
+    """Test pattern constraint uses backticks."""
     schema = {"type": "string", "pattern": "^[a-z]+$"}
     constraints = parser._extract_constraints(schema)
-    assert "Pattern: ^[a-z]+$" in constraints
+    assert constraints == "Pattern: `^[a-z]+$`"
 
 
 def test_extract_constraints_multiple() -> None:
@@ -1060,7 +1086,14 @@ def test_extract_constraints_multiple() -> None:
     }
     constraints = parser._extract_constraints(schema)
     assert "One of: admin, user" in constraints
-    assert "Min length: 1" in constraints
+    assert ">=1 chars" in constraints
+
+
+def test_extract_constraints_float_range() -> None:
+    """Test float min/max uses compact range notation."""
+    schema = {"type": "number", "minimum": 0.0, "maximum": 1.0}
+    constraints = parser._extract_constraints(schema)
+    assert constraints == "0.0-1.0"
 
 
 def test_empty_summary_uses_operation_id() -> None:

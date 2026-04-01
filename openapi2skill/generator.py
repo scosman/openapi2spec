@@ -46,6 +46,15 @@ def truncate_description(text: str, max_length: int = 100) -> str:
     return text[:max_length] + "..."
 
 
+def _append_constraints(description: str, constraints: str) -> str:
+    """Append constraints to description, joining with '. ' if both present."""
+    if constraints:
+        if description:
+            return f"{description}. {constraints}"
+        return constraints
+    return description
+
+
 def generate_skill_md(
     preamble: str,
     tag_groups: list[TagGroup],
@@ -173,8 +182,9 @@ def generate_reference_md(endpoint: Endpoint) -> str:
             lines.append("|Name|Type|Required|Description|")
             lines.append("|-|-|-|-|")
             for param in path_params:
+                desc = _append_constraints(param.description, param.constraints)
                 lines.append(
-                    f"|{param.name}|{param.type}|{'Yes' if param.required else 'No'}|{param.description}|"
+                    f"|{param.name}|{param.type}|{'Yes' if param.required else 'No'}|{desc}|"
                 )
             lines.append("")
 
@@ -187,8 +197,9 @@ def generate_reference_md(endpoint: Endpoint) -> str:
             lines.append("|-|-|-|-|-|")
             for param in query_params:
                 default = param.default if param.default else ""
+                desc = _append_constraints(param.description, param.constraints)
                 lines.append(
-                    f"|{param.name}|{param.type}|{'Yes' if param.required else 'No'}|{default}|{param.description}|"
+                    f"|{param.name}|{param.type}|{'Yes' if param.required else 'No'}|{default}|{desc}|"
                 )
             lines.append("")
 
@@ -203,13 +214,7 @@ def generate_reference_md(endpoint: Endpoint) -> str:
                 lines.append("|Field|Type|Required|Description|")
                 lines.append("|-|-|-|-|")
                 for field in endpoint.request_body.fields:
-                    # Include constraints in description if present
-                    desc = field.description
-                    if field.constraints:
-                        if desc:
-                            desc = f"{desc}. {field.constraints}"
-                        else:
-                            desc = field.constraints
+                    desc = _append_constraints(field.description, field.constraints)
                     lines.append(
                         f"|{field.name}|{field.type}|{'Yes' if field.required else 'No'}|{desc}|"
                     )
@@ -244,13 +249,7 @@ def generate_reference_md(endpoint: Endpoint) -> str:
                 lines.append("|Field|Type|Description|")
                 lines.append("|-|-|-|")
                 for field in response.fields:
-                    # Include constraints in description if present
-                    desc = field.description
-                    if field.constraints:
-                        if desc:
-                            desc = f"{desc}. {field.constraints}"
-                        else:
-                            desc = field.constraints
+                    desc = _append_constraints(field.description, field.constraints)
                     lines.append(f"|{field.name}|{field.type}|{desc}|")
                 lines.append("")
 
@@ -326,12 +325,7 @@ def _generate_schemas_section(schemas: list[Schema]) -> list[str]:
         lines.append("|-|-|-|-|")
 
         for field in schema.fields:
-            desc = field.description
-            if field.constraints:
-                if desc:
-                    desc = f"{desc}. {field.constraints}"
-                else:
-                    desc = field.constraints
+            desc = _append_constraints(field.description, field.constraints)
             lines.append(
                 f"|{field.name}|{field.type}|{'Yes' if field.required else 'No'}|{desc}|"
             )

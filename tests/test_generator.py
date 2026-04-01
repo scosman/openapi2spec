@@ -297,6 +297,7 @@ def test_generate_reference_md_with_path_params() -> None:
                 required=True,
                 description="User ID",
                 default=None,
+                constraints="",
             )
         ],
         request_body=None,
@@ -328,6 +329,7 @@ def test_generate_reference_md_with_query_params() -> None:
                 required=False,
                 description="Max results",
                 default="20",
+                constraints="",
             )
         ],
         request_body=None,
@@ -1017,3 +1019,197 @@ def test_reference_md_schemas_after_responses() -> None:
     schemas_pos = result.find("## Schemas")
     assert responses_pos > 0
     assert schemas_pos > responses_pos
+
+
+# Tests for compact constraint format in description
+
+
+def test_request_body_string_length_constraints() -> None:
+    """Test string length constraints use compact range in description."""
+    endpoint = Endpoint(
+        path="/tools",
+        method="POST",
+        summary="Create tool",
+        description="",
+        tag="Tools",
+        tags=["Tools"],
+        parameters=[],
+        request_body=RequestBody(
+            content_type="application/json",
+            fields=[
+                Field(
+                    name="name",
+                    type="string",
+                    required=True,
+                    description="Tool name",
+                    constraints="1-64 chars",
+                ),
+            ],
+            example=None,
+        ),
+        responses=[],
+        schemas=[],
+    )
+
+    result = generator.generate_reference_md(endpoint)
+
+    assert "|name|string|Yes|Tool name. 1-64 chars|" in result
+
+
+def test_request_body_int_range_constraints() -> None:
+    """Test integer range constraints use compact range in description."""
+    endpoint = Endpoint(
+        path="/items",
+        method="POST",
+        summary="Create item",
+        description="",
+        tag="Items",
+        tags=["Items"],
+        parameters=[],
+        request_body=RequestBody(
+            content_type="application/json",
+            fields=[
+                Field(
+                    name="priority",
+                    type="integer",
+                    required=False,
+                    description="Item priority",
+                    constraints="0-100",
+                ),
+            ],
+            example=None,
+        ),
+        responses=[],
+        schemas=[],
+    )
+
+    result = generator.generate_reference_md(endpoint)
+
+    assert "|priority|integer|No|Item priority. 0-100|" in result
+
+
+def test_response_field_float_range_constraints() -> None:
+    """Test float range constraints in response fields."""
+    endpoint = Endpoint(
+        path="/items/{id}",
+        method="GET",
+        summary="Get item",
+        description="",
+        tag="Items",
+        tags=["Items"],
+        parameters=[],
+        request_body=None,
+        responses=[
+            Response(
+                status_code="200",
+                description="Success",
+                fields=[
+                    Field(
+                        name="score",
+                        type="number",
+                        required=True,
+                        description="Item score",
+                        constraints="0.0-1.0",
+                    ),
+                ],
+                example=None,
+            )
+        ],
+        schemas=[],
+    )
+
+    result = generator.generate_reference_md(endpoint)
+
+    assert "|score|number|Item score. 0.0-1.0|" in result
+
+
+def test_constraints_only_no_description() -> None:
+    """Test field with constraints but no description shows just constraints."""
+    endpoint = Endpoint(
+        path="/tools",
+        method="POST",
+        summary="Create tool",
+        description="",
+        tag="Tools",
+        tags=["Tools"],
+        parameters=[],
+        request_body=RequestBody(
+            content_type="application/json",
+            fields=[
+                Field(
+                    name="name",
+                    type="string",
+                    required=True,
+                    description="",
+                    constraints="1-64 chars",
+                ),
+            ],
+            example=None,
+        ),
+        responses=[],
+        schemas=[],
+    )
+
+    result = generator.generate_reference_md(endpoint)
+
+    assert "|name|string|Yes|1-64 chars|" in result
+
+
+def test_path_param_with_constraints() -> None:
+    """Test path parameter constraints appear in description."""
+    endpoint = Endpoint(
+        path="/items/{id}",
+        method="GET",
+        summary="Get item",
+        description="",
+        tag="Items",
+        tags=["Items"],
+        parameters=[
+            Parameter(
+                name="id",
+                location="path",
+                type="integer",
+                required=True,
+                description="Item ID",
+                default=None,
+                constraints=">=1",
+            )
+        ],
+        request_body=None,
+        responses=[],
+        schemas=[],
+    )
+
+    result = generator.generate_reference_md(endpoint)
+
+    assert "|id|integer|Yes|Item ID. >=1|" in result
+
+
+def test_query_param_with_constraints() -> None:
+    """Test query parameter constraints appear in description."""
+    endpoint = Endpoint(
+        path="/items",
+        method="GET",
+        summary="List items",
+        description="",
+        tag="Items",
+        tags=["Items"],
+        parameters=[
+            Parameter(
+                name="limit",
+                location="query",
+                type="integer",
+                required=False,
+                description="Max results",
+                default="20",
+                constraints="1-100",
+            ),
+        ],
+        request_body=None,
+        responses=[],
+        schemas=[],
+    )
+
+    result = generator.generate_reference_md(endpoint)
+
+    assert "|limit|integer|No|20|Max results. 1-100|" in result
