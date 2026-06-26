@@ -1485,6 +1485,82 @@ def test_schema_to_fields_oneof_with_object_variants() -> None:
     assert "ErrorResult" in fields[0].type
 
 
+def test_flatten_union_variants_unwraps_nested() -> None:
+    """A oneOf/anyOf wrapper variant is flattened into the parent variant list."""
+    variants = [
+        {"oneOf": [{"x-schema-name": "A", "type": "object"}]},
+        {"type": "null"},
+    ]
+    flat = parser._flatten_union_variants(variants)
+    assert flat == [{"x-schema-name": "A", "type": "object"}, {"type": "null"}]
+
+
+def test_flatten_union_variants_passes_through_concrete() -> None:
+    """Concrete (typed) variants are left untouched, even if they look union-y."""
+    variants = [{"type": "string"}, {"type": "integer"}]
+    assert parser._flatten_union_variants(variants) == variants
+
+
+def test_schema_to_fields_discriminated_union_with_null() -> None:
+    """Pydantic's `anyOf: [{oneOf: [$ref]}, null]` registers the inner schema by
+    name and renders `one of: <Name> or null` — not a doubled `one of: one of`.
+    """
+    collector = parser.SchemaCollector()
+    schema = {
+        "anyOf": [
+            {
+                "oneOf": [
+                    {
+                        "x-schema-name": "JinjaInputTransform",
+                        "type": "object",
+                        "description": "Render via a Jinja2 template.",
+                        "properties": {
+                            "type": {"type": "string", "const": "jinja"},
+                            "template": {"type": "string"},
+                        },
+                        "required": ["template"],
+                    }
+                ]
+            },
+            {"type": "null"},
+        ]
+    }
+
+    fields = parser._schema_to_fields(schema, "input_transform", 0, collector)
+
+    assert fields[0].type == "one of: JinjaInputTransform or null"
+    assert "one of: one of" not in fields[0].type
+    assert "JinjaInputTransform" in {s.name for s in collector.schemas}
+
+
+def test_render_type_discriminated_union_with_null() -> None:
+    """`_render_type` flattens the nested wrapper instead of doubling `one of`."""
+    schema = {
+        "anyOf": [
+            {"oneOf": [{"type": "object", "properties": {"a": {"type": "string"}}}]},
+            {"type": "null"},
+        ]
+    }
+    rendered = parser._render_type(schema)
+    assert rendered == "one of: object or null"
+    assert "one of: one of" not in rendered
+
+
+def test_extract_constraints_const() -> None:
+    """A `const` (Pydantic Literal discriminator) surfaces like a single enum."""
+    assert parser._extract_constraints({"type": "string", "const": "jinja"}) == (
+        "One of: jinja"
+    )
+
+
+def test_extract_constraints_const_yields_to_enum() -> None:
+    """When both are present, the richer enum wins (no duplicate constraint)."""
+    result = parser._extract_constraints(
+        {"type": "string", "enum": ["a", "b"], "const": "a"}
+    )
+    assert result == "One of: a, b"
+
+
 def test_schema_to_fields_without_collector() -> None:
     """Test passing collector=None produces existing behavior."""
     schema = {

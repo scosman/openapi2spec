@@ -431,7 +431,9 @@ def _schema_to_fields(
 
     # Handle oneOf/anyOf - return a single field describing the union
     if "oneOf" in schema or "anyOf" in schema:
-        variants = schema.get("oneOf") or schema.get("anyOf", [])
+        variants = _flatten_union_variants(
+            schema.get("oneOf") or schema.get("anyOf", [])
+        )
         type_names = []
         has_null = False
 
@@ -654,13 +656,41 @@ def _merge_all_of(all_of: list) -> dict:
     return merged
 
 
+def _flatten_union_variants(variants: list) -> list:
+    """Flatten nested oneOf/anyOf wrappers into a single variant list.
+
+    Pydantic renders a discriminated union wrapped with ``| None`` as
+    ``anyOf: [{oneOf: [<refs>]}, {type: null}]`` — a union variant that is
+    itself a union. Left nested, the inner ``oneOf`` wrapper carries no
+    ``properties``/``x-schema-name`` of its own, so it never registers a
+    schema and renders as a doubled ``one of: one of: object``. Flattening
+    promotes the inner refs to first-class variants so each named schema is
+    registered and rendered by name. Only pure union wrappers (no ``type`` of
+    their own) are flattened; concrete schemas are passed through untouched.
+    """
+    flat: list = []
+    for v in variants:
+        if (
+            isinstance(v, dict)
+            and v.get("type") is None
+            and ("oneOf" in v or "anyOf" in v)
+        ):
+            sub = v.get("oneOf") or v.get("anyOf", [])
+            flat.extend(_flatten_union_variants(sub))
+        else:
+            flat.append(v)
+    return flat
+
+
 def _render_type(schema: dict) -> str:
     """Render a schema's type as a human-readable string."""
     if not schema or not isinstance(schema, dict):
         return "any"
 
     if "oneOf" in schema or "anyOf" in schema:
-        variants = schema.get("oneOf") or schema.get("anyOf", [])
+        variants = _flatten_union_variants(
+            schema.get("oneOf") or schema.get("anyOf", [])
+        )
         type_names = []
         has_null = False
         for v in variants:
@@ -703,6 +733,12 @@ def _extract_constraints(schema: dict) -> str:
     if "enum" in schema:
         enum_values = ", ".join(str(v) for v in schema["enum"])
         constraints.append(f"One of: {enum_values}")
+
+    # A ``const`` is a single-value enum — Pydantic emits it for ``Literal[...]``
+    # discriminator fields (e.g. ``type: "jinja"``). Surface it like an enum so
+    # the discriminator value the caller must send isn't silently dropped.
+    if "const" in schema and "enum" not in schema:
+        constraints.append(f"One of: {schema['const']}")
 
     if "format" in schema:
         constraints.append(f"Format: {schema['format']}")
